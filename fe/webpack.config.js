@@ -10,9 +10,9 @@ const isDebug = process.env.NODE_ENV === 'development';
 const root_path = __dirname;
 module.exports = {
     mode: isDebug ? 'development' : 'production',
-    context: __dirname,
+    context: root_path,
     entry: {
-        index:path.join(__dirname,'src/index.js'),
+        index:path.join(__dirname,'src/index.tsx'),
     },
     output: {
         path: path.join(__dirname, 'dist'),
@@ -21,18 +21,11 @@ module.exports = {
     devtool:isDebug?"source-map":false,// 'source-map', // 'source-map', //'cheap-eval-source-map',
     module: {
         rules: [
-            {
-                test: /\.jsx?$/,
-                exclude: /node_modules/,
-                loader: 'babel-loader',
-                options: {
-                    presets: ['es2015', 'react','stage-0'],
-                    plugins: [
-                        // ["@babel/plugin-proposal-decorators", { "legacy": true }],
-                        
-                    ]
-                }
-            },
+            //            // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
+            //   { test: /\.tsx?$/, loader: "awesome-typescript-loader" },
+
+            //   // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
+            //   { enforce: "pre", test: /\.js$/, loader: "source-map-loader" },
             {
                 test: /\.tsx?$/,
                 loaders: [
@@ -50,51 +43,96 @@ module.exports = {
                         loader: 'ts-loader',
                         options: {
                             transpileOnly: true,
-                            getCustomTransformers: () => ({
-                                before: [ tsImportPluginFactory({
-                                    libraryName: 'antd',
-                                    libraryDirectory: 'es',
-                                    style: true
-                                })]
-                            }),
                             compilerOptions: {
                                 module: 'es6'
                             }
                         },
                     }
                 ],
+                exclude: /node_modules/,
+            },
+            {
+                test: /\.(less|css)$/,
+                use:isDebug?
+                    [   "style-loader",
+                        "css-loader",
 
+                        { loader: 'less-loader', options: {
+                                javascriptEnabled:true,
+                                modifyVars: {
+                                    'font-size-base': '12px'
+                                    //'ant-prefix'             : 'hy'
+                                    // 'primary-color': '#1DA57A',
+                                    // 'link-color': '#1DA57A',
+                                    // 'border-radius-base': '2px',
+                                },
+
+                            }
+                        }
+                    ]: [
+                        {
+                            loader: MiniCssExtractPlugin.loader
+                        },
+                        //   "style-loader",
+                        {
+                            loader: 'css-loader',
+                            options: {
+                                //   modules: true,
+                                sourceMap: true
+                            }
+                        },
+                        { loader: 'less-loader', options: {
+                                javascriptEnabled:true,
+                                modifyVars: {
+                                    'font-size-base': '12px'
+                                    //'ant-prefix'             : 'hy'
+                                    // 'primary-color': '#1DA57A',
+                                    // 'link-color': '#1DA57A',
+                                    // 'border-radius-base': '2px',
+                                },
+
+                            }
+                        }
+
+                        // "less-loader?javascriptEnabled=true"
+                    ]
             },
             {
-                test: /\.scss|css$/,
-                use: [
-                    // MiniCssExtractPlugin.loader,
-                    'style-loader',
-                    'css-loader',
-                    'resolve-url-loader',
-                    'sass-loader?sourceMap'
-                ]
-            },
-            {
-                test: /\.less$/,
-                use: [
-                    'style-loader',
+                test: /\.scss$/,
+                use:isDebug?[   "style-loader",
+                    "css-loader",
+
+                    "sass-loader?javascriptEnabled=true"]: [
+                    {
+                        loader: MiniCssExtractPlugin.loader
+                    },
+                    //   "style-loader",
                     {
                         loader: 'css-loader',
                         options: {
-                            modules: true
+                            modules: true,
+                            sourceMap: true
                         }
                     },
-                    {
-                        loader: 'less-loader',
-                        options: {
-                            javascriptEnabled: true,
-                            sourceMap: true
-                           
-                        }
-                    }
+
+                    "sass-loader?javascriptEnabled=true"
                 ]
             },
+            // {
+            //     test: /\.jsx?$/,
+            //     exclude: /(node_modules|bower_components)/,
+            //     loader: 'babel-loader',
+            //     options: {
+            //         cacheDirectory:true,
+
+            //         presets: ['es2015', 'react', 'stage-0'],
+            //         plugins: [
+
+            //         ]
+            //     }
+            // },
+
+
             {
                 test: /\.(jpe?g|png|gif|svg)$/i,
                 use: [
@@ -201,7 +239,7 @@ module.exports = {
             cache: true,
             minify:!isDebug,
 
-            chunks: ['index'] // 这个模板对应上面那个节点
+            chunks: ['vendor','index'] // 这个模板对应上面那个节点
         }),
         // new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /nb/)
     ]
