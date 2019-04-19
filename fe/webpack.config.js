@@ -12,13 +12,18 @@ module.exports = {
     mode: isDebug ? 'development' : 'production',
     context: root_path,
     entry: {
-        index:path.join(__dirname,'src/index.tsx'),
+        index: path.join(__dirname, 'src/index.tsx'),
     },
     output: {
         path: path.join(__dirname, 'dist'),
         filename: '[name].bundle.js'
     },
-    devtool:isDebug?"source-map":false,// 'source-map', // 'source-map', //'cheap-eval-source-map',
+    devtool: isDebug ? "source-map" : false,// 'source-map', // 'source-map', //'cheap-eval-source-map',
+    resolve: {
+        // Add '.ts' and '.tsx' as resolvable extensions.
+        extensions: [".ts", ".tsx", ".js", ".json"],
+        modules: ['src', 'node_modules'],
+    },
     module: {
         rules: [
             //            // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
@@ -33,10 +38,10 @@ module.exports = {
                         loader: 'babel-loader',
 
                         options: {
-                            cacheDirectory:true,
+                            cacheDirectory: true,
                             presets: ['es2015', 'react', 'stage-0'],
                             babelrc: true,
-                            plugins: ['react-hot-loader/babel'],
+                            plugins: [['import', [{ libraryName: "antd", style: 'css' }]]]
                         },
                     },
                     {
@@ -53,12 +58,13 @@ module.exports = {
             },
             {
                 test: /\.(less|css)$/,
-                use:isDebug?
-                    [   "style-loader",
+                use: isDebug ?
+                    ["style-loader",
                         "css-loader",
 
-                        { loader: 'less-loader', options: {
-                                javascriptEnabled:true,
+                        {
+                            loader: 'less-loader', options: {
+                                javascriptEnabled: true,
                                 modifyVars: {
                                     'font-size-base': '12px'
                                     //'ant-prefix'             : 'hy'
@@ -69,7 +75,7 @@ module.exports = {
 
                             }
                         }
-                    ]: [
+                    ] : [
                         {
                             loader: MiniCssExtractPlugin.loader
                         },
@@ -81,8 +87,9 @@ module.exports = {
                                 sourceMap: true
                             }
                         },
-                        { loader: 'less-loader', options: {
-                                javascriptEnabled:true,
+                        {
+                            loader: 'less-loader', options: {
+                                javascriptEnabled: true,
                                 modifyVars: {
                                     'font-size-base': '12px'
                                     //'ant-prefix'             : 'hy'
@@ -99,10 +106,10 @@ module.exports = {
             },
             {
                 test: /\.scss$/,
-                use:isDebug?[   "style-loader",
+                use: isDebug ? ["style-loader",
                     "css-loader",
 
-                    "sass-loader?javascriptEnabled=true"]: [
+                    "sass-loader?javascriptEnabled=true"] : [
                     {
                         loader: MiniCssExtractPlugin.loader
                     },
@@ -174,7 +181,7 @@ module.exports = {
             new UglifyJsPlugin({
                 cache: true,
                 parallel: true,
-                sourceMap:isDebug, // set to true if you want JS source maps,
+                sourceMap: isDebug, // set to true if you want JS source maps,
                 uglifyOptions: {
                     warnings: isDebug
                 }
@@ -192,13 +199,28 @@ module.exports = {
             maxInitialRequests: 3,
             name: false,
             cacheGroups: {
+
                 vendor: {
                     name: 'vendor',
-                    chunks: 'initial',
+                    chunks: 'all',
                     priority: 0,
-                    minChunks: 3,
+                    minChunks: 2,
                     reuseExistingChunk: false,
-                    test: /node_modules\/(.*)\.js/
+                    test: /[\\/]node_modules[\\/]/,
+                    enforce: true
+                },
+                commons: {
+                    // async 设置提取异步代码中的公用代码
+                    chunks: "async",
+                    name: 'commons',
+                    /**
+                     * minSize 默认为 30000
+                     * 想要使代码拆分真的按照我们的设置来
+                     * 需要减小 minSize
+                     */
+                    minSize: 0,
+                    // 至少为两个 chunks 的公用代码
+                    minChunks: 2
                 }
             }
         }
@@ -209,7 +231,7 @@ module.exports = {
     plugins: [
         new webpack.DefinePlugin({
             'process.env': {
-                NODE_ENV:isDebug?JSON.stringify('development'): JSON.stringify('production')
+                NODE_ENV: isDebug ? JSON.stringify('development') : JSON.stringify('production')
             }
         }),
         new webpack.NamedModulesPlugin(),
@@ -230,16 +252,16 @@ module.exports = {
             filename: 'static/css/app.[name].css',
             chunkFilename: 'static/css/app.[contenthash:12].css'
         }),
-        
+
         new HtmlWebpackPlugin({
             filename: path.join(__dirname, 'dist/index.html'),
             template: path.join(__dirname, 'src/template/normal.tpl'),
             inject: 'body',
             hash: true,
             cache: true,
-            minify:!isDebug,
+            minify: !isDebug,
 
-            chunks: ['vendor','index'] // 这个模板对应上面那个节点
+            chunks: ['vendor', 'index'] // 这个模板对应上面那个节点
         }),
         // new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /nb/)
     ]

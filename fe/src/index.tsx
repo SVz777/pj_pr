@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom'
-import {Button} from 'semantic-ui-react'
+import {Button, Table} from 'antd'
+import {MainLayout} from "./components/common/MainLayout";
 
 interface IProps {
 
@@ -9,7 +10,7 @@ interface IProps {
 interface IState {
     name: string,
     date: Date,
-    timerID ?: number,
+    timerID?: number,
 }
 
 class Index extends React.Component<IProps, IState> {
@@ -24,7 +25,7 @@ class Index extends React.Component<IProps, IState> {
 
     componentDidMount() {
         this.setState({
-            timerID : setInterval(
+            timerID: setInterval(
                 () => this.tick(),
                 1000
             )
@@ -52,10 +53,14 @@ class Index extends React.Component<IProps, IState> {
 
 ReactDOM.render(
     <div>
-        <Index/>
-        <Button onClick={() => {
-            alert("hello world")
-        }}> Hello World </Button>
+        <MainLayout content={
+            <div>
+                <Index/>
+                <Button onClick={() => {
+                    alert("hello world")
+                }}> Hello World </Button>
+            </div>
+        }/>
     </div>,
     document.getElementById('root')
 );

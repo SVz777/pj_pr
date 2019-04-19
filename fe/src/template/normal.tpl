@@ -6,8 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>demo</title>
-    <link rel="icon" href="https://website.didiglobal.com/DDlogo.ico" type="image/x-icon">
-    <link rel="shortcut icon" href="https://website.didiglobal.com/DDlogo.ico">
+    <link rel="icon" href="logo_url" type="image/x-icon">
+    <link rel="shortcut icon" href="logo_url">
 
 </head>
 
