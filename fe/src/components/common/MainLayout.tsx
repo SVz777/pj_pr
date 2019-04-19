@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import {Menu, Icon, Button, Layout, Alert} from 'antd'
+import {Menu, Icon, Button, Layout} from 'antd'
 
 const {Header, Sider, Content} = Layout;
 
@@ -14,30 +14,16 @@ interface TProps {
 
 const menuList = [
     {
-        name: '首页',
+        name: 'default',
         icon: 'home',
         uri: './index.html'
     },
+    {
+        name: '首页',
+        icon: 'home',
+        uri: './home.html'
+    },
 ];
-
-export const alert = {
-    success: (s) => {
-        ReactDOM.render(<Alert message={s} type="success"
-                               closable/>, document.getElementById('msg') as HTMLElement)
-    },
-    info: (s) => {
-        ReactDOM.render(<Alert message={s} type="info"
-                               closable/>, document.getElementById('msg') as HTMLElement)
-    },
-    warning: (s) => {
-        ReactDOM.render(<Alert message={s} type="warning"
-                               closable/>, document.getElementById('msg') as HTMLElement)
-    },
-    error: (s) => {
-        ReactDOM.render(<Alert message={s} type="error"
-                               closable/>, document.getElementById('msg') as HTMLElement)
-    },
-};
 
 export class MainLayout extends React.Component<TProps, TState> {
     public state: TState = {show: false};

@@ -12,6 +12,7 @@
 </head>
 
 <body>
+<div id="msg" style="position:fixed;width:100%;"></div>
 <div id="root"></div>
 
 </body>

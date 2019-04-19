@@ -13,6 +13,7 @@ module.exports = {
     context: root_path,
     entry: {
         index: path.join(__dirname, 'src/index.tsx'),
+        home: path.join(__dirname, 'src/home.tsx'),
     },
     output: {
         path: path.join(__dirname, 'dist'),
@@ -262,6 +263,16 @@ module.exports = {
             minify: !isDebug,
 
             chunks: ['vendor', 'index'] // 这个模板对应上面那个节点
+        }),
+        new HtmlWebpackPlugin({
+            filename: path.join(__dirname, 'dist/home.html'),
+            template: path.join(__dirname, 'src/template/normal.tpl'),
+            inject: 'body',
+            hash: true,
+            cache: true,
+            minify: !isDebug,
+
+            chunks: ['vendor', 'home'] // 这个模板对应上面那个节点
         }),
         // new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /nb/)
     ]
