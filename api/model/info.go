@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"kiuma"
 )
 
@@ -18,25 +19,27 @@ const (
 	STATUS_OUT = 2
 )
 
-func GetInfo(c *kiuma.Context, plate string) (*Info, error) {
+func GetInfo(c *kiuma.Context, where map[string]interface{}) (*Info, error) {
 	info := &Info{}
-	sql := "select id,in_time,out_time,plate,status,pay from info where plate LiKE ? order by id desc"
-	if err := c.GetDb("info").QueryRow(sql, "%"+plate+"%").Scan(&info.Id, &info.InTime, &info.OutTime, &info.Plate, &info.Status, &info.Pay); err == nil {
-		return info, nil
+	whereString, field := getWhere(where)
+
+	sql := "select id,in_time,out_time,plate,status,pay from info " + whereString
+	fmt.Println(sql,field)
+	if err := c.GetDb("info").QueryRow(sql, field...).Scan(&info.Id, &info.InTime, &info.OutTime, &info.Plate, &info.Status, &info.Pay); err == nil {
+		return info, err
 	}
 	return nil, nil
 }
 
 func GetInfoListByCond(c *kiuma.Context, where map[string]interface{}, offset, limit int) ([]*Info, error) {
 	infos := make([]*Info, 0)
-	var field []interface{}
-	var whereString string
-	whereString, field = getWhere(where)
+	whereString, field := getWhere(where)
 
-	sql := "select id,in_time,out_time,plate,status,pay from info" + whereString + " limit ?,? "
+	sql := "select id,in_time,out_time,plate,status,pay from info" + whereString + "order by id desc limit ?,?  "
 
 	field = append(field, offset)
 	field = append(field, limit)
+	fmt.Println(sql,field)
 	if rows, err := c.GetDb("info").Query(sql, field...); err == nil {
 		for rows.Next() {
 			info := &Info{}
@@ -79,12 +82,16 @@ func UpdateInfo(c *kiuma.Context, id int, outTime int64, pay int) error {
 }
 
 func getWhere(where map[string]interface{}) (string, []interface{}) {
-	str := ""
+	str := " "
 	var field []interface{}
 
 	if len(where) != 0 {
 		for k, v := range where {
-			str += k + " = ? "
+			if k == "plate"{
+				str += k + " LIKE ? "
+			}else{
+				str += k + " = ? "
+			}
 			field = append(field,v)
 		}
 

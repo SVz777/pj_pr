@@ -17,7 +17,16 @@ func CarIn(c *kiuma.Context) {
 
 func CarOut(c *kiuma.Context) {
 	plate := c.Request().ParamString("plate", "")
-	if info, err := model.GetInfo(c, plate); err == nil {
+
+	where := make(map[string]interface{})
+	if len(plate) != 0 {
+		where["plate"] = plate
+	} else {
+		c.Error(nil)
+		return
+	}
+
+	if info, err := model.GetInfo(c, where); err == nil {
 		now := time.Now().Unix()
 		t := (now - info.InTime) / 3600
 		if (now-info.InTime)%3600 > 1800 {
