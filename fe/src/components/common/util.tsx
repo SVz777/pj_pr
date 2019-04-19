@@ -2,7 +2,7 @@ import * as ReactDOM from "react-dom";
 import {Alert} from "antd";
 import * as React from "react";
 
-export const alert = {
+export const toast = {
     success: (s) => {
         ReactDOM.render(<Alert message={s} type="success"
                                closable/>, document.getElementById('msg') as HTMLElement)
@@ -25,7 +25,7 @@ export function checkStatus(response: any) {
     if (response.status >= 200 && response.status < 300) {
         return response
     } else {
-        alert.error(
+        toast.error(
             '请求失败',
         );
         throw new Error(response.statusText);
