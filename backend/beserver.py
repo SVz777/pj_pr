@@ -2,12 +2,13 @@ import flask
 from flask import request, jsonify
 from werkzeug.datastructures import FileStorage
 from PIL import Image
+from car_plate_recognition import get_plate_from_model
 
 app = flask.Flask("pr")
 
 
-def get_plate_from_model(img):
-    return ""
+# def get_plate_from_model(img):
+#     return ""
 
 
 @app.route('/getplate', methods=['POST'], strict_slashes=False)
