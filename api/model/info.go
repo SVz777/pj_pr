@@ -23,7 +23,7 @@ func GetInfo(c *kiuma.Context, where map[string]interface{}) (*Info, error) {
 	info := &Info{}
 	whereString, field := getWhere(where)
 
-	sql := "select id,in_time,out_time,plate,status,pay from info " + whereString
+	sql := "select id,in_time,out_time,plate,status,pay from info" + whereString + "order by id desc"
 	fmt.Println(sql,field)
 	if err := c.GetDb("info").QueryRow(sql, field...).Scan(&info.Id, &info.InTime, &info.OutTime, &info.Plate, &info.Status, &info.Pay); err == nil {
 		return info, err
