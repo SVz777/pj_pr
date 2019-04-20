@@ -9,7 +9,7 @@ import {
 } from './components/common/RowsTable'
 import {SearchBar} from './components/common/SearchBar'
 import {checkErrorCode, checkStatus, toast} from "./components/common/util";
-import {Button, Upload, Icon} from "antd";
+import {Button, Upload, Icon, Row, Col} from "antd";
 
 interface IProps {
 
@@ -131,9 +131,9 @@ class Home extends React.Component<IProps, IState> {
 
         const {file} = this.state;
         const formData = new FormData();
-        if(file instanceof File){
+        if (file instanceof File) {
             formData.append('file', file);
-        }else{
+        } else {
             toast.error("file error");
             return
         }
@@ -155,7 +155,7 @@ class Home extends React.Component<IProps, IState> {
                 return false
             }
             let plate = j.plate;
-            fetch('/api/commit/'+ method +'?plate='+plate, {
+            fetch('/api/commit/' + method + '?plate=' + plate, {
                 method: 'GET',
             }).then(checkStatus)
                 .then((response) => {
@@ -171,7 +171,7 @@ class Home extends React.Component<IProps, IState> {
                     return false
                 }
                 toast.info(plate + method);
-            }).catch((ex)=>{
+            }).catch((ex) => {
                 toast.error("error")
             });
         }).catch((ex) => {
@@ -189,7 +189,7 @@ class Home extends React.Component<IProps, IState> {
                 });
                 return false;
             },
-            showUploadList:false
+            showUploadList: false
         };
         const outUploadProps = {
             beforeUpload: (file: File) => {
@@ -199,28 +199,45 @@ class Home extends React.Component<IProps, IState> {
                 });
                 return false;
             },
-            showUploadList:false
+            showUploadList: false
         };
         return (
             <div>
                 <MainLayout content={
                     <div>
-                        <div>
-                            <Upload
-                                {...inUploadProps}
+                        <Row
+                            type='flex'
+                            justify="space-between"
+                            gutter={12}
+                        >
+                            <Col
+                                span={4}
                             >
-                                <Button><Icon
-                                    type="upload"/>进入
-                                </Button>
-                            </Upload>
-                            < Upload
-                                {...outUploadProps}
+                                <Upload
+                                    {...inUploadProps}
+                                >
+                                    <Button><Icon
+                                        type="download"/>进入
+                                    </Button>
+                                </Upload>
+                            </Col>
+                            <Col
+                                span={4}
                             >
-                                <Button><Icon
-                                    type="upload"/>离开</Button>
-                            </Upload>
-                            <Button onClick={this.car}>确认</Button>
-                        </div>
+                                < Upload
+                                    {...outUploadProps}
+                                >
+                                    <Button><Icon
+                                        type="upload"/>离开</Button>
+                                </Upload>
+                            </Col>
+                            <Col
+                                span={4}
+                            >
+                                <Button onClick={this.car}>确认</Button>
+                            </Col>
+                        </Row>
+                        <hr/>
                         <SearchBar search={this.search}
                                    changeQ={this.changeQ}/>
                         <RowsTable
