@@ -1,13 +1,17 @@
+import shutil
+
 from keras.models import load_model
 from keras.preprocessing import image
 from keras.preprocessing.image import load_img
+from keras.backend import tensorflow_backend
+import tensorflow as tf
 import numpy as np
 import os
 import cv2
 from PIL import Image
-import time
-import tensorflow as tf
-from pip._vendor.distlib._backport import shutil
+
+province_model = load_model('./models/province_resnet_model.hdf5')
+province_model._make_predict_function()
 
 PROVINCE = (
     "京", "闽", "贵", "琼", "冀", "黑", "豫", "鄂",
@@ -16,6 +20,9 @@ PROVINCE = (
     "沪", "浙", "皖", "渝", "甘", "桂"
 )
 
+letter_model = load_model('./models/letter_resnet_model.hdf5')
+letter_model._make_predict_function()
+
 LETTER = (
     "O", "I", "A", "B", "C", "D",
     "E", "F", "G", "H", "J", "K",
@@ -23,6 +30,8 @@ LETTER = (
     "S", "T", "U", "V", "W", "X",
     "Y", "Z"
 )
+digit_model = load_model('./models/digit_resnet_model.hdf5')
+digit_model._make_predict_function()
 
 DIGIT = (
     "0", "1", "A", "B", "C", "D", "E", "F", "G", "H", "J", "K",
@@ -54,9 +63,9 @@ def find_plate(img):
         minSize=(36, 9),
         maxSize=(36 * 40, 9 * 40)
     )
-    print('检测到车牌数：', len(watches))
+    # print('检测到车牌数：', len(watches))
 
-    for (x, y, w, h) in watches:
+    for x, y, w, h in watches:
         cv2.rectangle(
             image,
             (x, y),
@@ -68,12 +77,13 @@ def find_plate(img):
         # 裁剪坐标为[y0:y1, x0:x1]
         cut_img = image[y + 0: y - 0 + h, x + 0: x - 0 + w]
         cut_gray = cv2.cvtColor(cut_img, cv2.COLOR_BGR2GRAY)
-        cv2.imwrite('./pic_tmp/car_plate_gray.jpg', cut_gray)
-        im = Image.open('./pic_tmp/car_plate_gray.jpg')
-        size = 720, 180
-        mmm = im.resize(size, Image.ANTIALIAS)
-        mmm.save('./pic_tmp/car_plate_gray.jpg', 'JPEG', quality=95)
-        break
+        mmm = cv2.resize(
+            cut_gray,
+            (720, 180)
+        )
+        # mmm = im.resize(size, Image.ANTIALIAS)
+        return mmm
+    raise Exception("not found plate")
 
 
 '''
@@ -81,18 +91,15 @@ def find_plate(img):
 '''
 
 
-def cut_plate():
+def cut_plate(img_gray):
+
+    img_pred = []
+
     # 1.读取图像，并把图像转为灰度图并显示
-    img = cv2.imread('./pic_tmp/car_plate_gray.jpg')  # 读取图片
-    img_gray = cv2.cvtColor(
-        img,
-        cv2.COLOR_BGR2GRAY
-    )  # 转为灰度图
     # cv2.imshow('gray', img_gray)  # 显示图片
     # cv2.waitKey(0)
 
     # 2.将灰度图进行二值化，设定阈值100，转换后 白底黑子===》目标黑底白字
-    img_thre = img_gray
     # 高斯除噪 二值化处理
     blur = cv2.GaussianBlur(
         img_gray,
@@ -102,9 +109,9 @@ def cut_plate():
         blur, 0, 255,
         cv2.THRESH_BINARY + cv2.THRESH_OTSU
     )
-    cv2.imshow('threshold', th3)
-    cv2.imwrite('./pic_tmp/white_black.jpg', th3)
-    cv2.waitKey(0)
+    # cv2.imshow('threshold', th3)
+    # cv2.imwrite('./pic_tmp/white_black.jpg', th3)
+    # cv2.waitKey(0)
 
     # 3.分割字符
     white, black = [], []
@@ -164,25 +171,19 @@ def cut_plate():
                 if temp == 1 and end - start < 20:
                     pass
                 elif temp > 3 and end - start < 20:
-                    # 认为这个字符是数字1， copy 一个32*40的1 作为temp.bmp
-                    shutil.copy(
-                        # 随便拿一张1的图片
-                        os.path.join('./train_images/training-set/1/', '78.bmp'),
-                        os.path.join('./pic_tmp/img_cut', str(temp) + '.bmp')
-                    )
-                    pass
+                    # 认为这个字符是数字1
+                    img_pred.append('1')
                 else:
                     cj = th3[1:height, start:end]
-                    cv2.imwrite(
-                        './pic_tmp/img_pred/' + str(temp) + '.jpg', cj
+                    cj = cv2.resize(
+                        cj,
+                        (40,40)
                     )
-                    im = Image.open('./pic_tmp/img_pred/' + str(temp) + '.jpg')
-                    size = 32, 40
-                    mmm = im.resize(size, Image.ANTIALIAS)
-                    mmm.save(
-                        './pic_tmp/img_cut/' + str(temp) + '.bmp', quality=95
-                    )
+                    cj = cv2.cvtColor(cj, cv2.COLOR_GRAY2BGR)
+
+                    img_pred.append(cj)
                     temp = temp + 1
+    return img_pred
 
 
 # 分割图像
@@ -205,33 +206,23 @@ def find_end(
 '''
 
 
-def get_province():
-    model = load_model('./models/province_resnet_model.hdf5')
-    img = load_img(
-        './pic_tmp/img_pred/1.jpg',
-        target_size=(40, 40)
-    )
-    img = image.img_to_array(img) / 255.0
-    img = np.expand_dims(img, axis=0)
+def get_province(img_pred):
 
-    predictions = model.predict(img)
+    img = img_pred/ 255.0
+    img = np.expand_dims(img, axis=0)
+    predictions = province_model.predict(img)
     index = np.unravel_index(
         predictions.argmax(),
         predictions.shape
     )
     return PROVINCE[index[1]]
 
+def get_letter(img_pred):
 
-def get_letter():
-    model = load_model('./models/letter_resnet_model.hdf5')
-    img = load_img(
-        './pic_tmp/img_pred/2.jpg',
-        target_size=(40, 40)
-    )
-    img = image.img_to_array(img) / 255.0
+    img = img_pred / 255.0
     img = np.expand_dims(img, axis=0)
 
-    predictions = model.predict(img)
+    predictions = letter_model.predict(img)
     index = np.unravel_index(
         predictions.argmax(),
         predictions.shape
@@ -239,33 +230,31 @@ def get_letter():
     return LETTER[index[1]]
 
 
-def get_digit():
-    model = load_model('./models/digit_resnet_model.hdf5')
+def get_digit(img_pred):
     res = []
-    for i in range(4, 9):
-        img = load_img(
-            './pic_tmp/img_pred/' + str(i) + '.jpg',
-            target_size=(40, 40)
-        )
-        img = image.img_to_array(img) / 255.0
-        img = np.expand_dims(img, axis=0)
+    for img in img_pred:
+        # todo
+        if isinstance(img,str):
+            res.append(img)
+        else:
+            img = img / 255.0
+            img = np.expand_dims(img, axis=0)
 
-        predictions = model.predict(img)
-        index = np.unravel_index(
-            predictions.argmax(),
-            predictions.shape
-        )
-        res.append(DIGIT[index[1]])
+            predictions = digit_model.predict(img)
+            index = np.unravel_index(
+                predictions.argmax(),
+                predictions.shape
+            )
+            res.append(DIGIT[index[1]])
     return res
 
 
 def get_plate_from_model(img):
-    find_plate(img)
-    cut_plate()
-    province = get_province()
-    letter = get_letter()
-    digit = get_digit()
-    s = ''
-    for i in digit:
-        s += i
-    return province + letter + '·' + s
+    img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
+    gray_img = find_plate(img)
+    img_pred = cut_plate(gray_img)
+    province = get_province(img_pred[0])
+    letter = get_letter(img_pred[1])
+    digit = get_digit(img_pred[2:7])
+
+    return province + letter + '·' + ''.join(digit)
