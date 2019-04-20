@@ -71,7 +71,7 @@ func GetInfoCountByCond(c *kiuma.Context, where map[string]interface{}) (int64, 
 
 
 func InsertInfo(c *kiuma.Context, plate string, inTime int64) error {
-	_, err := c.GetDb("info").Exec("insert into info(in_time,out_time,plate) values(?,?,?)", inTime, STATUS_IN, plate)
+	_, err := c.GetDb("info").Exec("insert into info(in_time,status,plate) values(?,?,?)", inTime, STATUS_IN, plate)
 	return err
 
 }
