@@ -9,7 +9,7 @@ import {
 } from './components/common/RowsTable'
 import {SearchBar} from './components/common/SearchBar'
 import {checkErrorCode, checkStatus, toast} from "./components/common/util";
-import {Button} from "antd";
+import {Button, Upload, Icon} from "antd";
 
 interface IProps {
 
@@ -24,6 +24,8 @@ interface IState {
         plate: string,
         status: number
     },
+    type: number
+    file?: File
 
 }
 
@@ -45,7 +47,8 @@ class Home extends React.Component<IProps, IState> {
         q: {
             plate: '',
             status: -1
-        }
+        },
+        type: 0,
     };
 
     constructor(props) {
@@ -87,13 +90,13 @@ class Home extends React.Component<IProps, IState> {
             .then((response) => {
                 return response.json()
             }).then((j) => {
-            if (undefined === j.error) {
+            if (undefined === j.errno) {
                 toast.error('请求失败');
                 return false
             }
-            if (j.error > 0) {
-                checkErrorCode(j.error);
-                toast.error(j.msg);
+            if (j.errno > 0) {
+                checkErrorCode(j.errno);
+                toast.error(j.errmsg);
                 return false
             }
             j.data.data.map((item: any) => {
@@ -114,23 +117,112 @@ class Home extends React.Component<IProps, IState> {
         this.getInfoList(1)
     };
 
-    public carIn = () => {
-        toast.info("in");
-    };
+    public car = () => {
+        const {type} = this.state;
+        let method = "";
+        if (type == 1) {
+            method = "carin"
+        } else if (type == 2) {
+            method = "carout"
+        } else {
+            toast.error("type error");
+            return
+        }
 
-    public carOut = () => {
-        toast.info("out");
+        const {file} = this.state;
+        const formData = new FormData();
+        if(file instanceof File){
+            formData.append('file', file);
+        }else{
+            toast.error("file error");
+            return
+        }
+        fetch('/be/getplate', {
+            method: 'POST',
+            body: formData
+        })
+            .then(checkStatus)
+            .then((response) => {
+                return response.json()
+            }).then((j) => {
+            if (undefined === j.errno) {
+                toast.error('请求失败');
+                return false
+            }
+            if (j.errno > 0) {
+                checkErrorCode(j.errno);
+                toast.error(j.errmsg);
+                return false
+            }
+            let plate = j.plate;
+            fetch('/api/commit/'+ method +'?plate='+plate, {
+                method: 'GET',
+            }).then(checkStatus)
+                .then((response) => {
+                    return response.json()
+                }).then((j) => {
+                if (undefined === j.errno) {
+                    toast.error('请求失败');
+                    return false
+                }
+                if (j.errno > 0) {
+                    checkErrorCode(j.errno);
+                    toast.error(j.errmsg);
+                    return false
+                }
+                toast.info(plate + method);
+            }).catch((ex)=>{
+                toast.error("error")
+            });
+        }).catch((ex) => {
+            toast.error("error")
+        });
     };
 
     render() {
         const pages: number = this.state.limit == 0 ? 0 : Math.ceil(this.state.total / this.state.limit);
+        const inUploadProps = {
+            beforeUpload: (file: File) => {
+                this.setState({
+                    file: file,
+                    type: 1
+                });
+                return false;
+            },
+            showUploadList:false
+        };
+        const outUploadProps = {
+            beforeUpload: (file: File) => {
+                this.setState({
+                    file: file,
+                    type: 2
+                });
+                return false;
+            },
+            showUploadList:false
+        };
         return (
             <div>
                 <MainLayout content={
                     <div>
-                        <Button onClick={this.carIn}>进入</Button>
-                        <Button onClick={this.carOut}>离开</Button>
-                        <SearchBar search={this.search} changeQ={this.changeQ}/>
+                        <div>
+                            <Upload
+                                {...inUploadProps}
+                            >
+                                <Button><Icon
+                                    type="upload"/>进入
+                                </Button>
+                            </Upload>
+                            < Upload
+                                {...outUploadProps}
+                            >
+                                <Button><Icon
+                                    type="upload"/>离开</Button>
+                            </Upload>
+                            <Button onClick={this.car}>确认</Button>
+                        </div>
+                        <SearchBar search={this.search}
+                                   changeQ={this.changeQ}/>
                         <RowsTable
                             rows={this.state.rows}
                             columns={columns}
