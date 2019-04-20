@@ -109,7 +109,7 @@ class Home extends React.Component<IProps, IState> {
             });
             this.setState({total: j.data.total, rows: j.data.data, page})
         }).catch((ex) => {
-            return
+            toast.error("error");
         })
     };
 
