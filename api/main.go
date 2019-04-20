@@ -2,49 +2,25 @@ package main
 
 import (
 	"kiuma"
-	"kiuma/application/model"
-	"time"
+	"kiuma/application/controller"
 )
 
+var dbConfig string
+
 func init() {
+	dbConfig = "root:password@tcp(127.0.0.1:3306)/pr?charset=utf8mb4"
 }
 
 func main() {
-	app := kiuma.New()
-	app.GET("/get", func(c *kiuma.Context) {
-		plate := c.Request().ParamString("plate", "")
-		if info, err := model.GetInfo(c, plate); err == nil {
-			c.Success(info)
-		} else {
-			c.Error(err.Error())
-		}
-	})
-	app.GET("/in", func(c *kiuma.Context) {
-		plate := c.Request().ParamString("plate", "")
-		if err := model.InsertInfo(c, plate, time.Now().Unix()); err == nil {
-			c.Success(nil)
-		} else {
-			c.Error(err.Error())
-		}
-	})
-	app.GET("/out", func(c *kiuma.Context) {
-		plate := c.Request().ParamString("plate", "")
-		if info, err := model.GetInfo(c, plate); err == nil {
-			now := time.Now().Unix()
-			t := (now - info.InTime) / 3600
-			if (now-info.InTime)%3600 > 1800 {
-				t++
-			}
-			pay := int(t * 4) // $4/h
+	app := kiuma.New(dbConfig)
 
-			if err := model.UpdateInfo(c, info.Id, now,pay); err == nil {
-				c.Success(nil)
-			} else {
-				c.Error(err.Error())
-			}
-		} else {
-			c.Error(err.Error())
-		}
-	})
-	app.Run(":8888")
+	app.GET("/commit/carin", controller.CarIn)
+	app.GET("/commit/carout", controller.CarOut)
+
+	app.GET("/query/getinfo", controller.GetInfo)
+	app.GET("/query/getinfolist", controller.GetInfoList)
+	err := app.Run(":8001")
+	if err != nil {
+		panic(err)
+	}
 }
