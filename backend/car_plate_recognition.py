@@ -50,7 +50,6 @@ def find_plate(img):
     # image = cv2.imread('./pic_tmp/car_plate.jpg')
     image = img
     resize_h = 1000
-    height = image.shape[0]
     scale = image.shape[1] / float(image.shape[0])
     image = cv2.resize(
         image,
@@ -81,7 +80,7 @@ def find_plate(img):
             cut_gray,
             (720, 180)
         )
-        # mmm = im.resize(size, Image.ANTIALIAS)
+        # cv2.imwrite("./tmp/t.jpg",image)
         return mmm
     raise Exception("not found plate")
 
@@ -253,8 +252,15 @@ def get_plate_from_model(img):
     img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
     gray_img = find_plate(img)
     img_pred = cut_plate(gray_img)
+    # cv2.imwrite('./tmp/grap.jpg',gray_img)
+    # k=-1
+    # for img in img_pred:
+    #     k+=1
+    #     if k == 2:
+    #         continue
+    #     cv2.imwrite(f'./tmp/{k}.jpg',img)
     province = get_province(img_pred[0])
     letter = get_letter(img_pred[1])
-    digit = get_digit(img_pred[2:7])
+    digit = get_digit(img_pred[3:8])
 
     return province + letter + '·' + ''.join(digit)
