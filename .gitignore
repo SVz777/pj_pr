@@ -2,3 +2,6 @@ fe/yarn.lock
 
 fe/node_modules/
 fe/dist/
+
+backend/models/
+
