@@ -147,12 +147,12 @@ class Home extends React.Component<IProps, IState> {
             }).then((j) => {
             if (undefined === j.errno) {
                 toast.error('请求失败');
-                return false
+                return false;
             }
             if (j.errno > 0) {
                 checkErrorCode(j.errno);
                 toast.error(j.errmsg);
-                return false
+                return false;
             }
             let plate = j.plate;
             fetch('/api/commit/' + method + '?plate=' + plate, {
@@ -163,19 +163,19 @@ class Home extends React.Component<IProps, IState> {
                 }).then((j) => {
                 if (undefined === j.errno) {
                     toast.error('请求失败');
-                    return false
+                    return false;
                 }
                 if (j.errno > 0) {
                     checkErrorCode(j.errno);
                     toast.error(j.errmsg);
-                    return false
+                    return false;
                 }
                 toast.info(plate + method);
             }).catch((ex) => {
-                toast.error("error")
+                toast.error("error");
             });
         }).catch((ex) => {
-            toast.error("error")
+            toast.error("error");
         });
     };
 
