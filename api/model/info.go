@@ -84,13 +84,26 @@ func UpdateInfo(c *kiuma.Context, id int, outTime int64, pay int) error {
 func getWhere(where map[string]interface{}) (string, []interface{}) {
 	str := " "
 	var field []interface{}
-
+	flag := false
 	if len(where) != 0 {
 		for k, v := range where {
 			if k == "plate"{
-				str += k + " LIKE ? "
+				if flag {
+					str += " and " + k + " LIKE ? "
+
+				}else{
+					str += k + " LIKE ? "
+					flag = true
+				}
 			}else{
-				str += k + " = ? "
+				if flag {
+					str += " and " + k + " = ? "
+
+				}else{
+					str += k + " = ? "
+					flag = true
+
+				}
 			}
 			field = append(field,v)
 		}

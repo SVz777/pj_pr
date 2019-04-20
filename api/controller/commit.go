@@ -25,8 +25,13 @@ func CarOut(c *kiuma.Context) {
 		c.Error(nil)
 		return
 	}
+	where["status"] = 1
 
 	if info, err := model.GetInfo(c, where); err == nil {
+		if info == nil {
+			c.Format(1,"no this car",nil)
+			return
+		}
 		now := time.Now().Unix()
 		t := (now - info.InTime) / 3600
 		if (now-info.InTime)%3600 > 1800 {
