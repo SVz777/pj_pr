@@ -10,7 +10,7 @@ SimpleHTTPRequestHandler.protocol_version = protocol
 
 src = './dist/'
 if not os.path.exists(src):
-    s = subprocess.Popen("yarn run dev", shell=True)
+    s = subprocess.Popen("yarn run pro", shell=True)
     s.wait()
 
 shutil.copy('./logo.png', './dist/static/logo.png')
