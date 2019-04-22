@@ -58,7 +58,7 @@ export class MainLayout extends React.Component<TProps, TState> {
                             theme='light'
                         >
                             <div style={{
-                                padding: '0 25',
+                                padding: '0 25px',
                             }}>
                                 <img
                                     style={{
