@@ -3,17 +3,17 @@ from http.server import SimpleHTTPRequestHandler, HTTPServer
 import os
 import shutil
 
-protocol = "HTTP/1.0"
+protocol = "HTTP/1.1"
 server_address = ("", 8000)
 
 SimpleHTTPRequestHandler.protocol_version = protocol
 
-src = './dist/'
+src = 'dist'
 if not os.path.exists(src):
     s = subprocess.Popen("yarn run pro", shell=True)
     s.wait()
 
-shutil.copy('./logo.png', './dist/static/logo.png')
+shutil.copy('logo.png', 'dist'+os.sep+'static'+os.sep+'logo.png')
 
 os.chdir(src)
 
