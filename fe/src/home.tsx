@@ -95,7 +95,7 @@ class Home extends React.Component<IProps, IState> {
                 return false
             }
             if (j.errno > 0) {
-                checkErrorCode(j.errno);
+                checkErrorCode(j);
                 toast.error(j.errmsg);
                 return false
             }
@@ -109,7 +109,7 @@ class Home extends React.Component<IProps, IState> {
             });
             this.setState({total: j.data.total, rows: j.data.data, page})
         }).catch((ex) => {
-            toast.error("error");
+            toast.error(ex.toString());
         })
     };
 
@@ -150,7 +150,7 @@ class Home extends React.Component<IProps, IState> {
                 return false;
             }
             if (j.errno > 0) {
-                checkErrorCode(j.errno);
+                checkErrorCode(j);
                 toast.error(j.errmsg);
                 return false;
             }
@@ -166,17 +166,17 @@ class Home extends React.Component<IProps, IState> {
                     return false;
                 }
                 if (j.errno > 0) {
-                    checkErrorCode(j.errno);
+                    checkErrorCode(j);
                     toast.error(j.errmsg);
                     return false;
                 }
                 toast.info(plate + method);
                 this.search();
             }).catch((ex) => {
-                toast.error("error");
+                toast.error(ex.toString());
             });
         }).catch((ex) => {
-            toast.error("error");
+            toast.error(ex.toString());
         });
     };
 

@@ -31,8 +31,9 @@ export function checkStatus(response: any) {
         throw new Error(response.statusText);
     }
 }
-export function checkErrorCode(code:number) {
-    if(code === 403) {
-        location.href='/account/login';
+export function checkErrorCode(responej: any) {
+    console.log(responej);
+    if(responej.errno == 301) {
+        location.href=responej.data.url;
     }
 }
