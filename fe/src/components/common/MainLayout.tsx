@@ -14,8 +14,8 @@ interface TProps {
 
 const menuList = [
     {
-        name: 'default',
-        icon: 'home',
+        name: 'index',
+        icon: 'user',
         uri: './index.html'
     },
     {

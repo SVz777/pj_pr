@@ -13,7 +13,7 @@ class NormalLoginForm extends React.Component {
                 console.log('Received values of form: ', values);
             }
         });
-        fetch('/api/auth/login?account='+this.props.form.getFieldValue("account")+'&password='+this.props.form.getFieldValue('password'), {
+        fetch('/api/auth/login?account=' + this.props.form.getFieldValue("account") + '&password=' + this.props.form.getFieldValue('password'), {
             method: 'GET',
         })
             .then(checkStatus)
@@ -29,7 +29,7 @@ class NormalLoginForm extends React.Component {
                 toast.error(j.errmsg);
                 return false;
             }
-            location.href="/fe/home.html";
+            location.href = "/fe/home.html";
 
         }).catch((ex) => {
             toast.error(ex.toString());
@@ -37,25 +37,36 @@ class NormalLoginForm extends React.Component {
     };
 
     render() {
-        const { getFieldDecorator } = this.props.form;
+        const {getFieldDecorator} = this.props.form;
         return (
             <Form onSubmit={this.handleSubmit} className="login-form">
                 <Form.Item>
                     {getFieldDecorator('account', {
-                        rules: [{ required: true, message: 'Please input your account!' }],
+                        rules: [{
+                            required: true,
+                            message: 'Please input your account!'
+                        }],
                     })(
-                        <Input prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="Account" />
+                        <Input prefix={<Icon type="user"
+                                             style={{color: 'rgba(0,0,0,.25)'}}/>}
+                               placeholder="Account"/>
                     )}
                 </Form.Item>
                 <Form.Item>
                     {getFieldDecorator('password', {
-                        rules: [{ required: true, message: 'Please input your Password!' }],
+                        rules: [{
+                            required: true,
+                            message: 'Please input your Password!'
+                        }],
                     })(
-                        <Input prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />} type="password" placeholder="Password" />
+                        <Input prefix={<Icon type="lock"
+                                             style={{color: 'rgba(0,0,0,.25)'}}/>}
+                               type="password" placeholder="Password"/>
                     )}
                 </Form.Item>
                 <Form.Item>
-                    <Button type="primary" htmlType="submit" className="login-form-button">
+                    <Button type="primary" htmlType="submit"
+                            className="login-form-button">
                         Log in
                     </Button>
                 </Form.Item>
@@ -64,13 +75,49 @@ class NormalLoginForm extends React.Component {
     }
 }
 
-const Index = Form.create({ name: 'normal_login' })(NormalLoginForm);
+const Index = Form.create({name: 'normal_login'})(NormalLoginForm);
 
+function logined() {
+    let account = document.cookie.split(";")[0].split("=")[1];
+    return account != "";
+}
+
+function logout() {
+    fetch('/api/auth/logout', {
+        method: 'GET',
+    })
+        .then(checkStatus)
+        .then((response) => {
+            return response.json()
+        }).then((j) => {
+        if (undefined === j.errno) {
+            toast.error('请求失败');
+            return false;
+        }
+        if (j.errno > 0) {
+            checkErrorCode(j);
+            toast.error(j.errmsg);
+            return false;
+        }
+        location.href = "/fe/index.html";
+
+    }).catch((ex) => {
+        toast.error(ex.toString());
+    });
+}
 
 ReactDOM.render(
     <div>
         <MainLayout content={
-            <Index/>
+            logined() ?
+                <div>
+                    <Button type="primary" onClick={logout}>
+                        Log Out
+                    </Button>
+                </div>
+                :
+                <Index/>
+
         }/>
 
     </div>,
