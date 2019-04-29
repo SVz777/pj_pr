@@ -7,6 +7,9 @@ import (
 )
 
 func GetInfoList(c *kiuma.Context) {
+	if !Auth(c){
+		return
+	}
 	req := c.Request()
 
 	page := req.ParamInt("page", 1)
@@ -41,6 +44,9 @@ func GetInfoList(c *kiuma.Context) {
 }
 
 func GetInfo(c *kiuma.Context) {
+	if !Auth(c){
+		return
+	}
 	req := c.Request()
 	id := req.ParamInt("id", 0)
 

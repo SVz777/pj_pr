@@ -7,6 +7,9 @@ import (
 )
 
 func CarIn(c *kiuma.Context) {
+	if !Auth(c){
+		return
+	}
 	plate := c.Request().ParamString("plate", "")
 	if err := model.InsertInfo(c, plate, time.Now().Unix()); err == nil {
 		c.Success(nil)
@@ -16,6 +19,9 @@ func CarIn(c *kiuma.Context) {
 }
 
 func CarOut(c *kiuma.Context) {
+	if !Auth(c){
+		return
+	}
 	plate := c.Request().ParamString("plate", "")
 
 	where := make(map[string]interface{})

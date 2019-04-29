@@ -14,8 +14,8 @@ interface TProps {
 
 const menuList = [
     {
-        name: 'default',
-        icon: 'home',
+        name: 'index',
+        icon: 'user',
         uri: './index.html'
     },
     {
@@ -58,12 +58,14 @@ export class MainLayout extends React.Component<TProps, TState> {
                             theme='light'
                         >
                             <div style={{
-                                padding: '20px 0',
-                                background: '#fa8919',
-                                textAlign: 'center'
+                                padding: '0 25px',
                             }}>
                                 <img
-                                    src='logo_url'/>
+                                    style={{
+                                        height: '40px',
+                                        width: '40px',
+                                    }}
+                                    src='/fe/static/logo.png'/>
                             </div>
                             <Menu
                                 mode="inline"

@@ -1,66 +1,125 @@
 import React from 'react';
 import ReactDOM from 'react-dom'
-import {Button, Table} from 'antd'
+import {Button, Form, Input, Icon} from 'antd'
 import {MainLayout} from "./components/common/MainLayout";
+import {checkErrorCode, checkStatus, toast} from "./components/common/util";
 
-interface IProps {
 
-}
-
-interface IState {
-    name: string,
-    date: Date,
-    timerID?: number,
-}
-
-class Index extends React.Component<IProps, IState> {
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            name: "svzzzzzzz",
-            date: new Date(),
-        };
-    }
-
-    componentDidMount() {
-        this.setState({
-            timerID: setInterval(
-                () => this.tick(),
-                1000
-            )
+class NormalLoginForm extends React.Component {
+    handleSubmit = (e) => {
+        e.preventDefault();
+        this.props.form.validateFields((err, values) => {
+            if (!err) {
+                console.log('Received values of form: ', values);
+            }
         });
-    }
-
-    componentWillUnmount() {
-        clearInterval(this.state.timerID);
-    }
-
-    tick = () => {
-        this.setState({
-            date: new Date()
+        fetch('/api/auth/login?account=' + this.props.form.getFieldValue("account") + '&password=' + this.props.form.getFieldValue('password'), {
+            method: 'GET',
         })
+            .then(checkStatus)
+            .then((response) => {
+                return response.json()
+            }).then((j) => {
+            if (undefined === j.errno) {
+                toast.error('请求失败');
+                return false;
+            }
+            if (j.errno > 0) {
+                checkErrorCode(j);
+                toast.error(j.errmsg);
+                return false;
+            }
+            location.href = "/fe/home.html";
+
+        }).catch((ex) => {
+            toast.error(ex.toString());
+        });
     };
 
     render() {
+        const {getFieldDecorator} = this.props.form;
         return (
-            <div>
-                {this.state.name},{this.state.date.toLocaleTimeString()}
-            </div>
-        )
+            <Form onSubmit={this.handleSubmit} className="login-form">
+                <Form.Item>
+                    {getFieldDecorator('account', {
+                        rules: [{
+                            required: true,
+                            message: 'Please input your account!'
+                        }],
+                    })(
+                        <Input prefix={<Icon type="user"
+                                             style={{color: 'rgba(0,0,0,.25)'}}/>}
+                               placeholder="Account"/>
+                    )}
+                </Form.Item>
+                <Form.Item>
+                    {getFieldDecorator('password', {
+                        rules: [{
+                            required: true,
+                            message: 'Please input your Password!'
+                        }],
+                    })(
+                        <Input prefix={<Icon type="lock"
+                                             style={{color: 'rgba(0,0,0,.25)'}}/>}
+                               type="password" placeholder="Password"/>
+                    )}
+                </Form.Item>
+                <Form.Item>
+                    <Button type="primary" htmlType="submit"
+                            className="login-form-button">
+                        Log in
+                    </Button>
+                </Form.Item>
+            </Form>
+        );
     }
+}
+
+const Index = Form.create({name: 'normal_login'})(NormalLoginForm);
+
+function logined() {
+    let account = document.cookie.split(";")[0].split("=")[1];
+    return account != "";
+}
+
+function logout() {
+    fetch('/api/auth/logout', {
+        method: 'GET',
+    })
+        .then(checkStatus)
+        .then((response) => {
+            return response.json()
+        }).then((j) => {
+        if (undefined === j.errno) {
+            toast.error('请求失败');
+            return false;
+        }
+        if (j.errno > 0) {
+            checkErrorCode(j);
+            toast.error(j.errmsg);
+            return false;
+        }
+        location.href = "/fe/index.html";
+
+    }).catch((ex) => {
+        toast.error(ex.toString());
+    });
 }
 
 ReactDOM.render(
     <div>
         <MainLayout content={
-            <div>
+            logined() ?
+                <div>
+                    <Button type="primary" onClick={logout}>
+                        Log Out
+                    </Button>
+                </div>
+                :
                 <Index/>
-                <Button onClick={() => {
-                    alert("hello world")
-                }}> Hello World </Button>
-            </div>
+
         }/>
+
     </div>,
     document.getElementById('root')
 );
