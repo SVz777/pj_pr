@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+const PRICE = 4
+
 func CarIn(c *kiuma.Context) {
 	if !Auth(c){
 		return
@@ -34,16 +36,18 @@ func CarOut(c *kiuma.Context) {
 	where["status"] = 1
 
 	if info, err := model.GetInfo(c, where); err == nil {
+		// 没有进这辆车
 		if info == nil {
 			c.Format(1,"no this car",nil)
 			return
 		}
 		now := time.Now().Unix()
+		// 计价
 		t := (now - info.InTime) / 3600
 		if (now-info.InTime)%3600 > 1800 {
 			t++
 		}
-		pay := int(t * 4) // $4/h
+		pay := int(t * PRICE) // $4/h
 
 		if err := model.UpdateInfo(c, info.Id, now, pay); err == nil {
 			c.Success(nil)
