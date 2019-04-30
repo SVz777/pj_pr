@@ -170,7 +170,7 @@ class Home extends React.Component<IProps, IState> {
                     toast.error(j.errmsg);
                     return false;
                 }
-                toast.info(plate + method);
+                toast.info(method + ':' + plate);
                 this.search();
             }).catch((ex) => {
                 toast.error(ex.toString());
