@@ -3,7 +3,7 @@ import numpy as np
 import cv2
 from PIL import Image
 
-province_model = load_model('./models/province_resnet_model.hdf5')
+province_model = load_model('./models/province_cnn_resnet_model.hdf5')
 # province_model = load_model('./models/province_all_resnet_model.hdf5')
 province_model._make_predict_function()
 
@@ -17,7 +17,7 @@ province_model._make_predict_function()
 
 PROVINCE = (
     "京", "闽", "粤", "苏",
-    "沪", "浙"
+    "沪", "浙", "鄂"
 )
 
 letter_model = load_model('./models/letter_resnet_model.hdf5')
@@ -71,11 +71,12 @@ def find_plate(img):
         )
 
         # 裁剪坐标为[y0:y1, x0:x1]
-        cut_img = image[y + 5:y - 5 + h, x + 8:x - 15 + w]
+        cut_img = image[y + 0:y - 0 + h, x + 8:x + 30 + w]
         cut_gray = cv2.cvtColor(cut_img, cv2.COLOR_BGR2GRAY)
+        size = int(cut_gray.shape[1] * 180 / cut_gray.shape[0]), 180
         mmm = cv2.resize(
             cut_gray,
-            (720, 180)
+            size
         )
         # cv2.imwrite("./tmp/t.jpg",image)
         return mmm
@@ -85,6 +86,33 @@ def find_plate(img):
 '''
 对剪切后的车牌进行字符拆分保存
 '''
+
+
+# 根据行列像素来判断边框并删除
+def del_frame(img):
+    height = img.shape[0]
+    width = img.shape[1]
+    threshold = width * 0.8
+    # 行
+    for i in range(height):
+        white, black = 0, 0
+        for j in range(width):
+            if img[i][j] == 255:
+                white += 1
+        if white > threshold:  # 如果这一行80%都是白色，那么认为是边框，把他去掉
+            for j in range(width):
+                img[i][j] = 0
+    # 列
+    threshold = height * 0.9
+    for i in range(width):
+        white, black = 0, 0
+        for j in range(height):
+            if img[j][i] == 255:
+                white += 1
+        if white > threshold:  # 如果这一列90%都是白色，那么认为是边框，把他去掉
+            for j in range(height):
+                img[j][i] = 0
+    return img
 
 
 def cut_plate(img_gray):
@@ -99,6 +127,11 @@ def cut_plate(img_gray):
         blur, 0, 255,
         cv2.THRESH_BINARY + cv2.THRESH_OTSU
     )
+
+    # 2.5 去除边框
+    th3 = del_frame(th3)
+    cv2.imwrite('./pic_tmp/white_black.jpg', th3)
+
     # 3.分割字符
     white, black = [], []
     height = th3.shape[0]
@@ -123,7 +156,7 @@ def cut_plate(img_gray):
     n, start, end, temp = 1, 1, 2, 1
     while n < width - 2:
         n += 1
-        if (white[n] if arg else black[n]) > (0.05 * white_max if arg else 0.05 * black_max):
+        if (white[n] if arg else black[n]) > (0.1 * white_max if arg else 0.1 * black_max):
             # 以上判断白底黑字或黑底白字
             # 0.05 需要调整，对应上面0.95
             start = n
@@ -150,20 +183,24 @@ def cut_plate(img_gray):
                 # print('end - start' + str(end - start))
                 if temp == 1 and end - start < 30:
                     pass
-                elif temp > 3 and end - start < 30:
+                # elif temp > 3 and end - start < 30:
+                elif (temp == 3 and (20 < end - start < 30)) or (temp > 3 and end - start < 30):
                     # 认为这个字符是数字1
                     img_pred.append('1')
                     temp += 1
                 else:
                     cj = th3[1:height, start:end]
-                    cj = cv2.resize(
-                        cj,
-                        (40, 40)
-                    )
-                    cj = cv2.cvtColor(cj, cv2.COLOR_GRAY2BGR)
+                    if cj.shape[1] < 20:
+                        pass
+                    else:
+                        cj = cv2.resize(
+                            cj,
+                            (40, 40)
+                        )
+                        cj = cv2.cvtColor(cj, cv2.COLOR_GRAY2BGR)
 
-                    img_pred.append(cj)
-                    temp = temp + 1
+                        img_pred.append(cj)
+                        temp = temp + 1
     return img_pred
 
 
@@ -226,7 +263,7 @@ def get_digit(img_pred):
                 predictions.shape
             )
             res.append(DIGIT[index[1]])
-    return res
+    return res[:5]
 
 
 def get_plate_from_model(img):
@@ -235,6 +272,6 @@ def get_plate_from_model(img):
     img_pred = cut_plate(gray_img)
     province = get_province(img_pred[0])
     letter = get_letter(img_pred[1])
-    digit = get_digit(img_pred[3:8])
+    digit = get_digit(img_pred[2:8])
 
     return province + letter + '·' + ''.join(digit)

@@ -78,8 +78,16 @@ class NormalLoginForm extends React.Component {
 const Index = Form.create({name: 'normal_login'})(NormalLoginForm);
 
 function logined() {
-    let account = document.cookie.split(";")[0].split("=")[1];
-    return account != "";
+    let cookies = document.cookie.split(";");
+    for(let cookie of cookies){
+        let tmp = cookie.split('=');
+        let k = tmp[0].trim();
+        let v = tmp[1].trim();
+        if(k == "account"){
+            return v != "";
+        }
+    }
+    return false;
 }
 
 function logout() {
