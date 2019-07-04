@@ -8,7 +8,7 @@ import (
 var dbConfig string
 
 func init() {
-	dbConfig = "root:password@tcp(10.179.69.3:3306)/pr?charset=utf8mb4"
+	dbConfig = "root:password@tcp(127.0.0.1:3306)/pr?charset=utf8mb4"
 }
 
 func main() {
