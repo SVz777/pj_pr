@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"kiuma"
+	"github.com/SVz777/kiuma"
 )
 
 func Login(c *kiuma.Context) {

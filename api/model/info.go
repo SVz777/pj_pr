@@ -2,7 +2,7 @@ package model
 
 import (
 	"fmt"
-	"kiuma"
+	"github.com/SVz777/kiuma"
 )
 
 type Info struct {

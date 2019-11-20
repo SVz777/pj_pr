@@ -1,0 +1,8 @@
+package: kiuma
+import:
+- package: github.com/jinzhu/gorm
+- package: google.golang.org/appengine
+  repo: https://github.com/golang/appengine
+  vcs: git
+  subpackages:
+  - cloudsql

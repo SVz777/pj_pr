@@ -1,8 +1,9 @@
 package main
 
 import (
-	"kiuma"
-	"kiuma/application/controller"
+	"github.com/SVz777/kiuma"
+
+	"github.com/SVz777/pj_pr/api/controller"
 )
 
 var dbConfig string

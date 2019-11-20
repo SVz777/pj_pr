@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"kiuma"
-	"kiuma/application/model"
+	"github.com/SVz777/kiuma"
+	"github.com/SVz777/pj_pr/api/model"
 	"time"
 )
 

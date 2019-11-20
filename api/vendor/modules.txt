@@ -1,0 +1,6 @@
+# github.com/SVz777/kiuma v0.0.0-20190425113113-2401678ba13b
+github.com/SVz777/kiuma
+# github.com/go-sql-driver/mysql v1.4.1
+github.com/go-sql-driver/mysql
+# google.golang.org/appengine v1.6.5
+google.golang.org/appengine/cloudsql
